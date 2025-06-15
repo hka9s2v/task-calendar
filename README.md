@@ -10,15 +10,23 @@ Next.js 14とPrismaを使用したモダンなタスク管理（Todo）アプリ
 - ✅ レスポンシブデザイン（Tailwind CSS）
 - ✅ リアルタイムデータ更新
 - ✅ TypeScript対応
+- ✅ ユーザー認証（NextAuth.js）
+- ✅ 繰り返しタスクの管理
+- ✅ カレンダー表示
+- ✅ 完了履歴の管理
 
 ## 🛠️ 技術スタック
 
 - **フレームワーク**: Next.js 14 (App Router)
 - **言語**: TypeScript
-- **データベース**: SQLite（開発環境）/ Prisma ORM
+- **データベース**: SQLite（開発環境）/ PostgreSQL（本番環境・NeonDB）
+- **ORM**: Prisma
+- **認証**: NextAuth.js
 - **スタイリング**: Tailwind CSS
 - **UI**: React 18
 - **パッケージマネージャー**: npm
+- **テスト**: Jest
+- **デプロイ**: Vercel + NeonDB
 
 ## 📁 プロジェクト構成
 
@@ -218,6 +226,67 @@ npm run dev -- -p 3001
 ## 🤝 コントリビューション
 
 バグ報告や機能提案は、GitHubのIssuesページでお受けしています。
+
+## 🎯 テスト
+
+```bash
+# 全テスト実行
+npm test
+
+# ウォッチモード
+npm run test:watch
+
+# カバレッジ付き
+npm run test:coverage
+```
+
+## 🎯 デプロイ
+
+### Vercel + NeonDBでのデプロイ
+
+詳細な手順は [DEPLOYMENT.md](./DEPLOYMENT.md) を参照してください。
+
+#### 簡単な手順
+
+1. **NeonDBでデータベース作成**
+   - [NeonDB](https://neon.tech/)でアカウント作成
+   - プロジェクト作成
+   - 接続文字列を取得
+
+2. **GitHubにプッシュ**
+   ```bash
+   git add .
+   git commit -m "NeonDB対応デプロイ準備完了"
+   git push origin main
+   ```
+
+3. **Vercelでプロジェクトをインポート**
+4. **環境変数を設定**
+5. **自動デプロイ実行**
+
+#### 必要な環境変数
+
+```
+DATABASE_URL=postgresql://username:password@ep-xxx-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
+NEXTAUTH_SECRET=your-secret-key
+NEXTAUTH_URL=https://your-domain.vercel.app
+PRISMA_SCHEMA_PATH=prisma/schema.production.prisma
+GOOGLE_CLIENT_ID=optional
+GOOGLE_CLIENT_SECRET=optional
+```
+
+#### NeonDB用のコマンド
+
+```bash
+# 本番用データベースのセットアップ
+npm run db:deploy:neon
+
+# 本番用Prisma Studioの起動
+npm run db:studio:neon
+
+# 本番用Prismaクライアント生成
+npm run db:generate:neon
+```
 
 ---
 
