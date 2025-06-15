@@ -5,6 +5,11 @@ import { prisma } from '../../../../lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+// 文字列を配列に変換するヘルパー関数
+function stringToArray(str: string): number[] {
+  return str.split(',').map(Number).filter(n => !isNaN(n));
+}
+
 interface RouteParams {
   params: {
     id: string;
@@ -40,7 +45,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(todo);
+    // weekDaysを文字列から配列に変換
+    const responseData = {
+      ...todo,
+      weekDays: todo.weekDays ? stringToArray(todo.weekDays) : null
+    };
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Failed to fetch todo:', error);
     return NextResponse.json(
@@ -133,7 +144,13 @@ export async function PATCH(
       data: updateData,
     });
 
-    return NextResponse.json(todo);
+    // weekDaysを文字列から配列に変換
+    const responseData = {
+      ...todo,
+      weekDays: todo.weekDays ? stringToArray(todo.weekDays) : null
+    };
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Failed to update todo:', error);
     return NextResponse.json(

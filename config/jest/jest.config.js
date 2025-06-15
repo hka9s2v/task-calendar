@@ -4,7 +4,7 @@ const nextJest = require('next/jest')
 // next.config.jsや.envファイルを自動で読み込む
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files
-  dir: './',
+  dir: '../../',
 })
 
 // Jest設定オブジェクト
@@ -12,9 +12,9 @@ const customJestConfig = {
   // 基本設定
   maxWorkers: 1, // テストの並行実行を制限（データベースロック回避）
   testEnvironment: 'node', // Node.js環境でテスト実行
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'], // テスト前の初期化ファイル
-  globalSetup: '<rootDir>/jest.global-setup.js', // グローバルセットアップ
-  globalTeardown: '<rootDir>/jest.global-teardown.js', // グローバルティアダウン
+  setupFilesAfterEnv: ['<rootDir>/config/jest/jest.setup.js'], // テスト前の初期化ファイル
+  globalSetup: '<rootDir>/config/jest/jest.global-setup.js', // グローバルセットアップ
+  globalTeardown: '<rootDir>/config/jest/jest.global-teardown.js', // グローバルティアダウン
 
   // テスト対象の指定
   testMatch: [

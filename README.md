@@ -6,103 +6,40 @@ Next.js 14とPrismaを使用したモダンなタスク管理（Todo）アプリ
 
 - ✅ タスクの作成・表示・編集・削除（CRUD操作）
 - ✅ タスクの完了/未完了切り替え
-- ✅ インライン編集（ダブルクリックで編集モード）
 - ✅ レスポンシブデザイン（Tailwind CSS）
 - ✅ リアルタイムデータ更新
-- ✅ TypeScript対応
 - ✅ ユーザー認証（NextAuth.js）
+  - ローカル認証（メール・パスワード）
 - ✅ 繰り返しタスクの管理
+  - 毎日、毎週、毎月、隔週の繰り返し設定
+  - 曜日指定（週次タスク）
+  - 日付指定（月次タスク）
 - ✅ カレンダー表示
 - ✅ 完了履歴の管理
+- ✅ 包括的なテストスイート（Jest）
 
 ## 🛠️ 技術スタック
 
 - **フレームワーク**: Next.js 14 (App Router)
 - **言語**: TypeScript
-- **データベース**: SQLite（開発環境）/ PostgreSQL（本番環境・NeonDB）
+- **データベース**: SQLite（開発・テスト環境）/ PostgreSQL（本番環境・NeonDB）
 - **ORM**: Prisma
 - **認証**: NextAuth.js
 - **スタイリング**: Tailwind CSS
 - **UI**: React 18
 - **パッケージマネージャー**: npm
-- **テスト**: Jest
+- **テスト**: Jest + Testing Library
 - **デプロイ**: Vercel + NeonDB
-
-## 📁 プロジェクト構成
-
-```
-task-calender/
-├── 🔧 設定ファイル
-│   ├── package.json              # 依存関係とスクリプト定義
-│   ├── tsconfig.json             # TypeScript設定
-│   ├── tailwind.config.ts        # Tailwind CSS設定
-│   ├── postcss.config.js         # PostCSS設定
-│   └── next-env.d.ts             # Next.js型定義（自動生成）
-│
-├── 🗄️ データベース関連
-│   ├── prisma/
-│   │   ├── schema.prisma         # データベーススキーマ
-│   │   └── dev.db               # SQLiteデータベースファイル
-│   └── lib/
-│       └── prisma.ts            # Prismaクライアント設定
-│
-├── 🎨 フロントエンド
-│   └── app/
-│       ├── layout.tsx           # アプリ全体レイアウト
-│       ├── page.tsx             # ホームページ
-│       ├── globals.css          # グローバルCSS
-│       ├── types/
-│       │   └── todo.ts          # Todo型定義
-│       └── components/
-│           ├── TodoList.tsx     # Todoリストメインコンポーネント
-│           └── TodoItem.tsx     # 個別Todoアイテム
-│
-└── 🌐 API（バックエンド）
-    └── app/api/todos/
-        ├── route.ts             # Todo一覧・作成API
-        └── [id]/
-            └── route.ts         # 個別Todo操作API
-```
-
-## 📋 ファイル詳細説明
-
-### 設定ファイル
-
-- **`package.json`**: プロジェクトの依存関係、スクリプト、メタデータを定義
-- **`tsconfig.json`**: TypeScriptコンパイラの設定（Next.js最適化済み）
-- **`tailwind.config.ts`**: Tailwind CSSの設定とカスタマイズ
-- **`postcss.config.js`**: PostCSSプロセッサー設定
-
-### データベース関連
-
-- **`prisma/schema.prisma`**: Todoモデルのスキーマ定義（SQLite使用）
-- **`lib/prisma.ts`**: Prismaクライアントのシングルトンインスタンス
-- **`prisma/dev.db`**: SQLiteデータベースファイル（実データ保存）
-
-### フロントエンドコンポーネント
-
-- **`app/layout.tsx`**: アプリケーション全体の共通レイアウト
-- **`app/page.tsx`**: ホームページ（TodoListコンポーネントを表示）
-- **`app/types/todo.ts`**: Todo型の定義
-- **`app/components/TodoList.tsx`**: 
-  - Todo一覧表示
-  - 新規Todo追加フォーム
-  - CRUD操作のAPI通信
-  - ローディング・エラー状態管理
-- **`app/components/TodoItem.tsx`**: 
-  - 個別Todoアイテムのレンダリング
-  - チェックボックス（完了切り替え）
-  - インライン編集機能
-  - 削除ボタン
 
 ### APIエンドポイント
 
 - **`app/api/todos/route.ts`**:
-  - `GET /api/todos`: 全Todo取得
-  - `POST /api/todos`: 新規Todo作成
+  - `GET /api/todos`: 認証済みユーザーのTodo取得
+  - `POST /api/todos`: 新規Todo作成（繰り返し設定含む）
 - **`app/api/todos/[id]/route.ts`**:
   - `PATCH /api/todos/[id]`: Todo更新
   - `DELETE /api/todos/[id]`: Todo削除
+- **`app/api/auth/[...nextauth]/route.ts`**: NextAuth認証エンドポイント
 
 ## 🔧 環境要件
 
@@ -113,45 +50,45 @@ task-calender/
 
 ### 1. リポジトリをクローン
 
+### 2. 環境変数の設定
+
+`.env`ファイルを作成：
 ```bash
-git clone <repository-url>
-cd task-calender
+# データベース
+DATABASE_URL="file:./dev.db"
+# NextAuth設定
+NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
 ```
 
-### 2. 依存関係のインストール
+### 3. 依存関係のインストール
 
 ```bash
 npm install
 ```
-
 このコマンドにより以下が自動実行されます：
 - 必要なパッケージのインストール
 - `prisma generate`（Prismaクライアント生成）
 
-### 3. データベースのセットアップ
+### 4. データベースのセットアップ
 
 ```bash
 npx prisma db push
 ```
-
 このコマンドにより：
 - SQLiteデータベースファイル（`dev.db`）が作成されます
-- Todoテーブルが作成されます
+- 全テーブル（User、Todo、CompletionHistory等）が作成されます
 
-### 4. 開発サーバーの起動
+### 5. 開発サーバーの起動
 
 ```bash
 npm run dev
 ```
-
-### 5. アプリケーションにアクセス
-
-ブラウザで以下のURLにアクセス：
-```
-http://localhost:3000
-```
+`http://localhost:3000`でアプリケーションが起動する
 
 ## 📜 利用可能なスクリプト
+
+### 開発・ビルド
 
 ```bash
 # 開発サーバー起動
@@ -165,23 +102,44 @@ npm run start
 
 # リンタ実行
 npm run lint
-
-# Prismaクライアント再生成
-npx prisma generate
-
-# データベーススキーマ同期
-npx prisma db push
-
-# Prisma Studio（DB管理画面）起動
-npx prisma studio
 ```
 
-## 🎯 使用方法
+### テスト
 
-1. **新規タスク作成**: 上部の入力欄にタスク名を入力して「追加」ボタンをクリック
-2. **タスク完了切り替え**: チェックボックスをクリック
-3. **タスク編集**: タスク名をダブルクリックしてインライン編集
-4. **タスク削除**: 「削除」ボタンをクリック
+```bash
+# 全テスト実行
+npm test
+# カバレッジ付き
+npm run test:coverage
+```
+
+### データベース管理
+
+```bash
+# 開発環境用
+npx prisma generate              # Prismaクライアント再生成
+npx prisma db push              # データベーススキーマ同期
+npx prisma studio               # Prisma Studio（DB管理画面）起動
+
+# 本番環境用（NeonDB）
+npm run db:generate:neon        # 本番用Prismaクライアント生成
+npm run db:deploy:neon          # 本番用データベースデプロイ
+npm run db:studio:neon          # 本番用Prisma Studio起動
+```
+
+## 🧪 テスト
+### テスト実行
+
+```bash
+# 全テスト実行（60テスト）
+npm test
+
+# 特定のテストファイル実行
+npm test -- __tests__/api/todos/route.test.ts
+
+# カバレッジレポート生成
+npm run test:coverage
+```
 
 ## 🔍 トラブルシューティング
 
@@ -196,99 +154,43 @@ rm prisma/dev.db
 npx prisma db push
 ```
 
-### 依存関係の問題
+### テスト失敗
 
 ```bash
-# node_modulesとpackage-lock.jsonを削除して再インストール
+# テストデータベースクリーンアップ
+rm -f prisma/test*.db
+
+# 依存関係再インストール
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-### ポート3000が使用中の場合
-
-```bash
-# 他のポートで起動
-npm run dev -- -p 3001
-```
-
-## 🔮 今後の拡張予定
-
-- [ ] ユーザー認証機能
-- [ ] カテゴリ分類機能
-- [ ] 期限設定機能
-- [ ] カレンダー表示機能
-- [ ] データエクスポート機能
-
-## 📝 ライセンス
-
-このプロジェクトはMITライセンスの下で公開されています。
-
-## 🤝 コントリビューション
-
-バグ報告や機能提案は、GitHubのIssuesページでお受けしています。
-
-## 🎯 テスト
-
-```bash
-# 全テスト実行
-npm test
-
-# ウォッチモード
-npm run test:watch
-
-# カバレッジ付き
-npm run test:coverage
-```
-
 ## 🎯 デプロイ
 
-### Vercel + NeonDBでのデプロイ
+- 基本的にmasterブランチPushをトリガーとして自動デプロイされます
 
-詳細な手順は [DEPLOYMENT.md](./DEPLOYMENT.md) を参照してください。
+### Vercel + NeonDBでのデプロイ初回設定
 
-#### 簡単な手順
-
-1. **NeonDBでデータベース作成**
-   - [NeonDB](https://neon.tech/)でアカウント作成
-   - プロジェクト作成
-   - 接続文字列を取得
-
-2. **GitHubにプッシュ**
-   ```bash
-   git add .
-   git commit -m "NeonDB対応デプロイ準備完了"
-   git push origin main
-   ```
-
-3. **Vercelでプロジェクトをインポート**
-4. **環境変数を設定**
-5. **自動デプロイ実行**
-
-#### 必要な環境変数
-
-```
-DATABASE_URL=postgresql://username:password@ep-xxx-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
-NEXTAUTH_SECRET=your-secret-key
-NEXTAUTH_URL=https://your-domain.vercel.app
-PRISMA_SCHEMA_PATH=prisma/schema.production.prisma
-GOOGLE_CLIENT_ID=optional
-GOOGLE_CLIENT_SECRET=optional
-```
-
-#### NeonDB用のコマンド
+#### 1. NeonDBでデータベース作成
+#### 2. GitHubにプッシュ
+#### 3. Vercelでプロジェクトをインポート
+#### 4. 必要な環境変数
 
 ```bash
-# 本番用データベースのセットアップ
-npm run db:deploy:neon
+# データベース
+DATABASE_URL=postgresql://username:password@ep-xxx-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
 
-# 本番用Prisma Studioの起動
-npm run db:studio:neon
+# NextAuth設定
+NEXTAUTH_SECRET=your-production-secret-key
+NEXTAUTH_URL=https://your-domain.vercel.app
 
-# 本番用Prismaクライアント生成
-npm run db:generate:neon
+# Prisma設定
+PRISMA_SCHEMA_PATH=prisma/schema.production.prisma
 ```
 
----
+#### 5. 本番データベースのセットアップ
 
-**開発者**: task-calendar-app team  
-**バージョン**: 0.1.0 
+```bash
+# 本番用データベースのマイグレーション
+npm run db:deploy:neon
+```

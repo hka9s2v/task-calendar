@@ -15,7 +15,7 @@ interface TodoCalendarData {
   title: string;
   isRecurring: boolean;
   repeatType?: string | null;
-  weekDays?: string | null;
+  weekDays?: number[] | null;
   monthDay?: number | null;
   completions: CompletionData[];
 }

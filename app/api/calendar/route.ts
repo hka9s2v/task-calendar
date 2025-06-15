@@ -5,6 +5,11 @@ import { prisma } from '../../../lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+// 文字列を配列に変換するヘルパー関数
+function stringToArray(str: string): number[] {
+  return str.split(',').map(Number).filter(n => !isNaN(n));
+}
+
 // GET /api/calendar?year=2024&month=12
 export async function GET(request: NextRequest) {
   try {
@@ -53,7 +58,7 @@ export async function GET(request: NextRequest) {
         title: todo.title,
         isRecurring: todo.isRecurring,
         repeatType: todo.repeatType,
-        weekDays: todo.weekDays,
+        weekDays: todo.weekDays ? stringToArray(todo.weekDays) : null,
         monthDay: todo.monthDay,
         completions: todo.completions.map((completion: any) => ({
           day: completion.day,

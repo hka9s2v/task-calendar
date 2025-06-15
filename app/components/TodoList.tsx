@@ -178,8 +178,8 @@ export const TodoList = () => {
       case 'daily':
         return '毎日';
       case 'weekly':
-        if (todo.weekDays) {
-          const days = todo.weekDays.split(',').map(Number).map(getWeekDayName);
+        if (todo.weekDays && Array.isArray(todo.weekDays) && todo.weekDays.length > 0) {
+          const days = todo.weekDays.map(getWeekDayName);
           return `毎週 ${days.join('・')}曜日`;
         }
         return '毎週';

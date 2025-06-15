@@ -1,10 +1,3 @@
-/*
-  Warnings:
-
-  - Added the required column `userId` to the `CompletionHistory` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `userId` to the `Todo` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateTable
 CREATE TABLE "Account" (
     "id" TEXT NOT NULL PRIMARY KEY,
@@ -48,29 +41,8 @@ CREATE TABLE "VerificationToken" (
     "expires" DATETIME NOT NULL
 );
 
--- Insert default user for existing data
-INSERT INTO "User" ("id", "name", "email") VALUES ('default-user-id', 'デフォルトユーザー', 'default@example.com');
-
--- RedefineTables
-PRAGMA defer_foreign_keys=ON;
-PRAGMA foreign_keys=OFF;
-CREATE TABLE "new_CompletionHistory" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "todoId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "completedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "year" INTEGER NOT NULL,
-    "month" INTEGER NOT NULL,
-    "day" INTEGER NOT NULL,
-    CONSTRAINT "CompletionHistory_todoId_fkey" FOREIGN KEY ("todoId") REFERENCES "Todo" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "CompletionHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-INSERT INTO "new_CompletionHistory" ("completedAt", "day", "id", "month", "todoId", "year", "userId") 
-SELECT "completedAt", "day", "id", "month", "todoId", "year", 'default-user-id' FROM "CompletionHistory";
-DROP TABLE "CompletionHistory";
-ALTER TABLE "new_CompletionHistory" RENAME TO "CompletionHistory";
-CREATE UNIQUE INDEX "CompletionHistory_todoId_year_month_day_key" ON "CompletionHistory"("todoId", "year", "month", "day");
-CREATE TABLE "new_Todo" (
+-- CreateTable
+CREATE TABLE "Todo" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "title" TEXT NOT NULL,
     "completed" BOOLEAN NOT NULL DEFAULT false,
@@ -86,12 +58,19 @@ CREATE TABLE "new_Todo" (
     "isRecurring" BOOLEAN NOT NULL DEFAULT false,
     CONSTRAINT "Todo_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-INSERT INTO "new_Todo" ("biweeklyStart", "completed", "createdAt", "dueDate", "id", "isRecurring", "lastCompleted", "monthDay", "repeatType", "title", "updatedAt", "weekDays", "userId") 
-SELECT "biweeklyStart", "completed", "createdAt", "dueDate", "id", "isRecurring", "lastCompleted", "monthDay", "repeatType", "title", "updatedAt", "weekDays", 'default-user-id' FROM "Todo";
-DROP TABLE "Todo";
-ALTER TABLE "new_Todo" RENAME TO "Todo";
-PRAGMA foreign_keys=ON;
-PRAGMA defer_foreign_keys=OFF;
+
+-- CreateTable
+CREATE TABLE "CompletionHistory" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "todoId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "completedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "year" INTEGER NOT NULL,
+    "month" INTEGER NOT NULL,
+    "day" INTEGER NOT NULL,
+    CONSTRAINT "CompletionHistory_todoId_fkey" FOREIGN KEY ("todoId") REFERENCES "Todo" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "CompletionHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
@@ -107,3 +86,6 @@ CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token"
 
 -- CreateIndex
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "CompletionHistory_todoId_year_month_day_key" ON "CompletionHistory"("todoId", "year", "month", "day");

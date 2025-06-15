@@ -5,6 +5,16 @@ import { prisma } from '../../../lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+// 配列を文字列に変換するヘルパー関数
+function arrayToString(arr: number[]): string {
+  return arr.join(',');
+}
+
+// 文字列を配列に変換するヘルパー関数
+function stringToArray(str: string): number[] {
+  return str.split(',').map(Number).filter(n => !isNaN(n));
+}
+
 // タスクが今日実行すべきかチェックする関数
 function shouldShowToday(todo: any): boolean {
   if (!todo.isRecurring) {
@@ -40,9 +50,8 @@ function shouldShowToday(todo: any): boolean {
       return true;
     
     case 'weekly':
-      if (todo.weekDays) {
-        const weekDays = todo.weekDays.split(',').map(Number);
-        return weekDays.includes(todayDay);
+      if (todo.weekDays && Array.isArray(todo.weekDays) && todo.weekDays.length > 0) {
+        return todo.weekDays.includes(todayDay);
       }
       return false;
     
@@ -64,7 +73,7 @@ function shouldShowToday(todo: any): boolean {
 }
 
 // GET /api/todos
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -75,12 +84,27 @@ export async function GET() {
       );
     }
 
-    const todos = await prisma.todo.findMany({
+    const { searchParams } = new URL(request.url);
+    const filter = searchParams.get('filter');
+
+    let todos = await prisma.todo.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(todos);
+    // weekDaysを文字列から配列に変換
+    const todosWithArrays = todos.map(todo => ({
+      ...todo,
+      weekDays: todo.weekDays ? stringToArray(todo.weekDays) : null
+    }));
+
+    if (filter === 'today') {
+      return NextResponse.json(todosWithArrays.filter(shouldShowToday));
+    } else if (filter === 'upcoming') {
+      return NextResponse.json(todosWithArrays.filter(todo => !shouldShowToday(todo)));
+    }
+
+    return NextResponse.json(todosWithArrays);
   } catch (error) {
     console.error('Failed to fetch todos:', error);
     return NextResponse.json(
@@ -117,7 +141,7 @@ export async function POST(request: NextRequest) {
         title,
         userId: session.user.id,
         repeatType: repeatType || null,
-        weekDays: weekDays || null,
+        weekDays: weekDays && Array.isArray(weekDays) && weekDays.length > 0 ? arrayToString(weekDays) : null,
         monthDay: monthDay || null,
         biweeklyStart: biweeklyStart ? new Date(biweeklyStart) : null,
         dueDate: dueDate ? new Date(dueDate) : null,
@@ -125,7 +149,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(todo, { status: 201 });
+    // レスポンス時にweekDaysを配列に変換
+    const responseData = {
+      ...todo,
+      weekDays: todo.weekDays ? stringToArray(todo.weekDays) : null
+    };
+
+    return NextResponse.json(responseData, { status: 201 });
   } catch (error) {
     console.error('Failed to create todo:', error);
     return NextResponse.json(
